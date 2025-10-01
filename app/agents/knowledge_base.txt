@@ -1,0 +1,98 @@
+#Document Information
+type: table
+description: Summary table of title, project, version, author.
+fields: [Document Title, Project Name, SAP System/Release Version, Client Name, Prepared By (Author, Department), Document Version & Date]
+prompt:  List all title, project, version, author(Keep its Value "PWC AI Asset" always) in a table.
+
+#Introduction
+type: text
+description: Formal, brief statement of document objective, scope, and audience.
+prompt: Carefully analyze the payload(pgm_name, type, explanation)State the purpose, scope, and audience for this document.
+
+#Transport Management
+type: table
+description: Summary Table of development packages and transport requests, including sequencing and dependencies, strictly based on what is explicitly present or referenced in the provided input or ABAP code. Do not include or invent any data if not available.
+fields: [Development Package, Transport Request Number, Sequence/Dependency, Description]
+prompt: Present the results strictly as a table with the columns: Development Package, Transport Request Number, Sequence/Dependency, Description. Carefully analyze the payload(transport) and List all development packages and transport requests, including sequencing and dependencies in a table.Use provided values or [To Be Filled] if missing.
+
+#Requirement Overview
+type: text
+description: Concise statement of business requirement and solution objectives for non-technical stakeholders.
+prompt: Summarize business requirements and objectives for the ABAP development.
+
+#Solution Approach
+type: text
+description: High-level summary of how the solution meets requirements, including architectural highlights.
+prompt: Carefully analyze the payload(explanation) and Summarize the SAP ABAP solution approach and its key architectural principles.Present your answer as: 1. ... 2. ... 3. ..., with each point clearly explaining one aspect or principle.
+
+#SAP Object Details
+type: table
+description: Table of all key SAP technical objects created/used (programs, function modules, classes, methods, PERFORMs). Do not include variables, internal tables, work areas, types, or constants.
+fields: [Object Type, Object Name, Description, Related Main Program/Module]
+prompt: Present the results strictly as a table with the columns: Object Type, Object Name, Description, Related Main Program/Module.Carefully Analyze the payload(explanation) and List only the SAP technical objects (such as programs, function modules, classes, methods, PERFORM routines, FMs, Transactions) that are created or used in the solution. Exclude any data declarations such as internal tables, work areas, variables, types, or constants. Present the result as a table with columns: Object Type, Object Name, Description, and Related Main Program/Module.
+
+#Data Declarations & SAP Tables Used
+type: table
+description:Comprehensive table of all significant data declarations—including internal tables, work areas, variables, types, and constants—and SAP database tables directly read from or written to in the solution. This excludes any selection screen elements (e.g., PARAMETERS or SELECT-OPTIONS).
+fields: [Declaration Name, Data Type/Object, Description, Usage Context]
+prompt: Present the results strictly as a table with the columns: Declaration Name, Data Type/Object, Description, Usage Context.For this solution, Carefully use the payload(declarations and explanation) identify and list all significant data declarations—including internal tables, work areas, constants, types, and variables—that are used within the program logic (excluding selection screen declarations such as PARAMETERS and SELECT-OPTIONS). Also include all SAP database tables accessed (read or write). For each entry, provide its name, data type or SAP table/object, a brief description of its role, and its usage context within the program. Do not include any declarations related to the selection screen. Present the results strictly as a table with the columns: Declaration Name, Data Type/Object, Description, Usage Context.
+
+#User Interface Details
+type: table
+description: Table of all selection screen fields and GUI elements.
+fields: [Screen Field, Type, Default Value, Description]
+prompt: Carefully analyze the payload(selectionscreen) and List all UI/screen fields, type, default, and purpose as a table.
+
+#Processing Logic & Control Flow
+type: text
+description: High-level, stepwise narrative of program flow and key processing stages, based strictly on the implemented code (do not infer unimplemented or generic behaviors).
+prompt: Carefully analyze the provided payload(pgm_name, type, explanation) and describe the main program steps and the flow of control, including key processing stages, major conditionals (IF/CASE statements), and iterations (loops). Only include logic that is explicitly present in the payload explanation and omit any general or assumed SAP behavior. Present the explanation as a clear, sequential, step-by-step or bullet-point, reflecting the actual implemented logic found in payload explanation.
+
+#Detailed Logic Block Descriptions
+type: text
+description: Pseudo-code style, step-by-step breakdown for each major logic block, strictly reflecting the code as written—no generalizations or assumptions beyond what is present in the ABAP source.
+prompt: Do not generate Technical Code, instead numbered-point format narrative explanation of each block.Carefully analyze the provided payload ( pgm_name , type, explanation of each perform/method). For each major logic block (such as methods, forms, subroutines, or event handlers) as identified in the provided payload explanation, generate a pseudo-code representation in narrative numnered format that follows the implemented logic exactly as written. Present each block as a clear, concise, step-by-step or numbered-point pseudo-code sequence, including only those operations, decisions, and steps that are explicitly present in payload explanation. Do not include any inferred, generic, or typical ABAP behaviors beyond the provided payload.
+
+#Output Details
+type: text
+description: Comprehensive table of all output generated by the program, detailing output types, formats/layouts, and destinations as explicitly implemented in the provided code (no assumed or generic output).
+prompt: Present the results strictly as a table with the columns: Output Type, Format/Layout, Output Destination, Description. Carefully analyze the provided payload(explanation) and List in table format, every output operation that is explicitly implemented. For each output, include the output type (e.g., ALV report, file export, screen message), the format or layout (e.g., table structure, CSV, message text), the specific destination (e.g., SAP GUI, spool, application server, email), and a brief description. Only include outputs and destinations that are concretely present in payload explanation; do not list any possible, typical, or inferred output behaviors that are not present in payload explanation.
+
+#Enhancements & Modifications
+type: table
+description: Table of all enhancements, BADIs, user exits, and impacted standard objects implemented or referenced in the provided ABAP code only. Exclude any enhancements, modifications, or extension points that are not definitively present in the code.
+fields: [Type, Name, Impacted Object, Location, Description]
+prompt: Present the results strictly as a table with the columns: Type, Name, Impacted Object, Location, Description. Carefully examine the provided payload explanation and list in table format, all enhancements, BADIs, user exits, or modifications that are actually referenced in the payload explanation . For each, include the type (e.g., enhancement point, BADI, user exit), the specific enhancement or exit name, the standard object impacted, its precise location in the code (such as include, method, or line reference), and a short description of its purpose. Do not report or guess at any enhancements, BADIs, or modifications that are not explicitly present in the payload explanation.
+
+#Flow Diagram
+type: diagram
+description: Strictly code-derived linear (or branched) process flow, expressed as stepwise “A -> B -> C” format, representing only the actual ABAP logic.
+prompt: Carefully examine only the provided ABAP code. Identify the main implemented processing steps, branches (for IF/CASE), and sequence in the program. Render the core process flow strictly as an arrow-connected sequence always first will be "Start" and last will be "End” using the format “Step1 -> Step2 -> Step3...” (for simple flows) or explicitly show branching with labels if present, e.g., “Condition? -> [Yes] StepA -> StepB; [No] StepC -> End”. Exclude any generic or inferred steps—include only those actually present in the code. Output only the arrow-connected steps as plain text, with no explanation, formatting, or extra text.
+
+#Error Handling & Logging
+type: text
+description: Point-wise explanation of error/exception handling, message logic, and logging or user notification, strictly as implemented in the provided ABAP code—no generalizations or assumed behaviors.
+prompt: Examine only the provided payload explanation and list all in a clear numbered format, every instance of error handling, exception processing, message display, logging, or user notification explicitly present in the explanation. For each point, briefly describe the specific mechanism and context (for example, usage of MESSAGE statements, TRY-CATCH blocks, explicit logging calls, or updates to log tables), ensuring the point directly reflects what is present in the source. Do not include any general SAP error handling or logging practices not visible in the actual code.
+
+#Performance Considerations
+type: text
+description: Explanation of performance-related techniques and data volume handling as explicitly implemented in the provided ABAP code. Excludes any generic or assumed optimization practices not clearly shown in the code.
+prompt: Review only the provided payload explanation and list all performance-relevant strategies, such as index usage, buffering, data selection/filtering, data volume handling, or specific processing modes (batch/online), but only if they are clearly present or implemented in the code. Describe each technique in a clear, point-wise (numbered) manner, giving the context for each. Do not include generic SAP performance recommendations or optimization strategies that are not evident in the explanation.
+
+#Security & Authorizations
+type: table
+description: Summary Table of SAP authorization objects, authority-check statements, and any required user roles or profiles, strictly as implemented or referenced in the provided ABAP code.
+fields: [Object/Check Type, Name, Check Logic/Location, Description]
+prompt: List all SAP authorization objects, authority-check statements, and any required user roles or profiles in table.Use provided values from payload(explanation) or [None] if missing.
+
+#Test Scenario
+type: table
+description: Table of test plan coverage/scenarios, input data, expected outputs, status.
+fields:[Test Case, Objective, Input Data, Expected Output, Actual Result/Status, Sign-off/Comments]
+prompt:Present the results strictly as a table with the columns: Test Case, Objective, Input Data, Expected Output, Actual Result/Status, Sign-off/Comments.Analyze the payload(selectionscreen, declarations and explanation) and then Generate and List all the possible positive as well as negative key test cases/scenarios, their input/expected output, actual result/status, and sign-off comments in table.
+
+#Sign-Off
+type: table
+description: Table of approved by, and client sign-off (with signature and date).
+fields: [Role, Name, Signature, Date]
+prompt: Provide a sign-off table for Prepared By, Approved By, and Client Sign-Off.
