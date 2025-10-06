@@ -16,7 +16,7 @@ if openai_api_key:
     os.environ["OPENAI_API_KEY"] = openai_api_key
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 
-OPENAI_MODEL = "gpt-4o"
+OPENAI_MODEL = "gpt-4.1"
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "knowledge_base.txt")
 
 def load_sections_from_template(template_file: str) -> list:
@@ -50,11 +50,15 @@ def filter_payload_by_keys(payload: Dict[str, Any], required_keys: List[str]) ->
 SECTION_BUNDLES = [
     (["Document Information", "Introduction", "Requirement Overview", "Solution Approach", "SAP Object Details"], ['pgm_name','type', 'inc_name', 'explanation']),
     (["User Interface Details"], ["selectionscreen"]),
-    (["Processing Logic & Control Flow"], ['pgm_name', 'type', 'explanation']),
+    (["Processing Logic"], ['pgm_name', 'type', 'explanation']),
     (["Detailed Logic Block Descriptions"], ['pgm_name', 'type', 'explanation']),
     (["Output Details"], ['pgm_name', 'type', 'explanation']),
-    (["Data Declarations & SAP Tables Used", "Enhancements & Modifications", "Error Handling & Logging", "Performance Considerations", "Security & Authorizations"], [ 'selectionscreen', 'declarations', 'explanation']),
-    (["Test Scenario"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Data Declarations & SAP Tables Used"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Enhancements & Modifications"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Error Handling & Logging"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Performance Considerations"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Security & Authorizations"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Test Scenario"], [ 'selectionscreen', 'explanation']),
     (["Flow Diagram"],[ 'selectionscreen', 'declarations', 'explanation']),
     (["Transport Management"], ['transport']),
     (["Sign-Off"], []),
