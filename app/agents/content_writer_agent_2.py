@@ -5,8 +5,6 @@ from typing import Any, Dict, List
 import openai
 from dotenv import load_dotenv
 import asyncio
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage
 load_dotenv()
 logger = logging.getLogger("content_writer_agent")
 logging.basicConfig(level=logging.INFO)
@@ -84,13 +82,7 @@ class ContentWriterAgent:
     def __init__(self, model=OPENAI_MODEL, template_path=TEMPLATE_PATH):
         self.model = model
         self.template_path = template_path
-        # self.openai_client = openai.OpenAI(api_key=openai_api_key)
-        self.llm = ChatOpenAI(
-        model_name=self.model,
-        temperature=0.1,
-        verbose=True,
-        openai_api_key=openai_api_key
-        )
+        self.openai_client = openai.OpenAI(api_key=openai_api_key)
         self.template_sections = load_sections_from_template(self.template_path)
         self.results = []
 
@@ -167,29 +159,18 @@ class ContentWriterAgent:
         return ordered_results
 
     # --- Private async section generator ---
-    # --- Private async section generator with LangChain / LangSmith ---
     async def _generate_sections(self, section_names, section_bibles, payload, max_retries=3) -> Dict[str, str]:
         """
-        Generate each section’s content using LangChain ChatOpenAI (LangSmith tracing enabled),
-        with automatic retries for missing sections. Returns dict {section_name: content}.
+        Asynchronously generate each section’s content using OpenAI, with automatic retries
+        for missing sections. Returns dict {section_name: content}.
         """
-
         results = {}
         remaining_sections = section_names.copy()
 
-        # Initialize LangChain LLM (tracing enabled)
-        llm = ChatOpenAI(
-            model_name=self.model,
-            temperature=0.1,
-            verbose=True,
-            openai_api_key=openai_api_key
-        )
-
-        async def call_llm_for_sections(sections_subset):
+        async def call_openai_for_sections(sections_subset):
             context_json = json.dumps(payload, indent=2)
             batched_prompt = (
                 "You are an expert SAP ABAP technical specification writer.\n"
-                "Srictly follow the section names as mentioned. Do not infere any other similar name\n"
                 "Generate content for multiple SECTIONS of an SAP ABAP document.\n"
                 "For each section:\n"
                 "- Follow its 'BIBLE' strictly.\n"
@@ -203,6 +184,7 @@ class ContentWriterAgent:
                 batched_prompt += f"\n====== SECTION: {s} ======\n"
                 batched_prompt += f"---START BIBLE---\n{section_bibles.get(s, '')}\n---END BIBLE---\n"
                 batched_prompt += f"Generate content for '{s}'. No titles or numbering.\n"
+
                 if s.strip().lower() == "flow diagram":
                     batched_prompt += (
                         "\nEXTRA INSTRUCTIONS:\n"
@@ -212,9 +194,17 @@ class ContentWriterAgent:
                     )
 
             try:
-                # LangChain call (tracing automatically captured in LangSmith)
-                response = await llm.agenerate([[HumanMessage(content=batched_prompt)]])
-                return response.generations[0][0].text.strip()
+                response = await asyncio.to_thread(
+                    self.openai_client.chat.completions.create,
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": "You are a professional SAP ABAP documentation expert."},
+                        {"role": "user", "content": batched_prompt}
+                    ],
+                    temperature=0.1
+                )
+                return response.choices[0].message.content.strip()
+
             except Exception as e:
                 logger.error(f"[Async Batch Error] {e}")
                 return ""
@@ -225,7 +215,7 @@ class ContentWriterAgent:
                 break
 
             logger.info(f"🌀 Attempt {attempt} for sections: {remaining_sections}")
-            output = await call_llm_for_sections(remaining_sections)
+            output = await call_openai_for_sections(remaining_sections)
 
             newly_completed = []
             for s in remaining_sections:
@@ -238,6 +228,7 @@ class ContentWriterAgent:
                     logger.warning(f"[Attempt {attempt}] Missing section: {s}")
 
             remaining_sections = [s for s in remaining_sections if s not in newly_completed]
+
             if remaining_sections:
                 await asyncio.sleep(1.5)
 
