@@ -2,7 +2,6 @@ import os
 import uuid
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
-import asyncio
 
 from app.agents.content_writer_agent import ContentWriterAgent
 from app.doc.doc_constructor_agent import build_document
@@ -13,22 +12,15 @@ app = FastAPI(title="ABAP Technical Spec Generator")
 # In-memory store for job tracking (not for production use)
 JOBS = {}
 
-async def generate_doc_background(payload, job_id):
+def generate_doc_background(payload, job_id):
     """
-    Async function to generate the document and update the job status.
+    Synchronous function to run in background: 
+    Generates the document and updates the job status.
     """
     try:
         writer_agent = ContentWriterAgent()
+        results = writer_agent.run(payload)
 
-        # --- Async run ---
-        if hasattr(writer_agent, "run_async"):
-            results = await writer_agent.run_async(payload)
-        else:
-            # Fallback to synchronous call in a thread if run_async doesn't exist
-            loop = asyncio.get_running_loop()
-            results = await loop.run_in_executor(None, writer_agent.run, payload)
-
-        # Build section metadata
         sections = []
         for sec in writer_agent.template_sections:
             sec_type = "text"
@@ -42,7 +34,6 @@ async def generate_doc_background(payload, job_id):
                 "type": sec_type
             })
 
-        # Generate Flow Diagram and DOC
         diagram_agent = FlowDiagramAgent()
         doc = build_document(results, sections, flow_diagram_agent=diagram_agent, diagram_dir="diagrams")
 
@@ -56,7 +47,6 @@ async def generate_doc_background(payload, job_id):
         JOBS[job_id]['status'] = "failed"
         JOBS[job_id]['error'] = str(e)
 
-
 @app.post("/generate_doc")
 async def generate_doc(payload: dict, background_tasks: BackgroundTasks):
     """
@@ -65,12 +55,8 @@ async def generate_doc(payload: dict, background_tasks: BackgroundTasks):
     """
     job_id = str(uuid.uuid4())
     JOBS[job_id] = {"status": "pending", "file_path": None, "error": None}
-
-    # Directly schedule the async background task
     background_tasks.add_task(generate_doc_background, payload, job_id)
-
     return {"job_id": job_id, "status": "started"}
-
 
 @app.get("/generate_doc/{job_id}")
 async def get_doc(job_id: str):
