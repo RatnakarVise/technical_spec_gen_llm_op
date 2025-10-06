@@ -51,6 +51,7 @@ def filter_payload_by_keys(payload: Dict[str, Any], required_keys: List[str]) ->
 # Each bundle is ( [section_name1, section_name2, ...], [payload_key1, payload_key2, ...])
 # NOT clubbed sections can be left as ["Section"], ["payload_key1"] so they're handled individually.
 SECTION_BUNDLES = [
+    (["Test Scenario"], [ 'selectionscreen', 'explanation']),
     (["Document Information", "Introduction", "Requirement Overview", "Solution Approach", "SAP Object Details"], ['pgm_name','type', 'inc_name', 'explanation']),
     (["User Interface Details"], ["selectionscreen"]),
     (["Processing Logic"], ['pgm_name', 'type', 'explanation']),
@@ -61,7 +62,6 @@ SECTION_BUNDLES = [
     (["Error Handling & Logging"], [ 'selectionscreen', 'declarations', 'explanation']),
     (["Performance Considerations"], [ 'selectionscreen', 'declarations', 'explanation']),
     (["Security & Authorizations"], [ 'selectionscreen', 'declarations', 'explanation']),
-    (["Test Scenario"], [ 'selectionscreen', 'explanation']),
     (["Flow Diagram"],[ 'selectionscreen', 'declarations', 'explanation']),
     (["Transport Management"], ['transport']),
     (["Sign-Off"], []),
@@ -169,79 +169,80 @@ class ContentWriterAgent:
     # --- Private async section generator ---
     # --- Private async section generator with LangChain / LangSmith ---
     async def _generate_sections(self, section_names, section_bibles, payload, max_retries=3) -> Dict[str, str]:
+        """
+        Generate each section’s content using LangChain ChatOpenAI (LangSmith tracing enabled),
+        with automatic retries for missing sections. Returns dict {section_name: content}.
+        """
+
         results = {}
         remaining_sections = section_names.copy()
 
-        # Split large test section into smaller logical sub-sections
-        expanded_section_names = []
-        for s in remaining_sections:
-            if s.strip().lower() == "test scenario":
-                expanded_section_names.extend([
-                    "Test Scenario - Positive Flow",
-                    "Test Scenario - Negative Flow",
-                    "Test Scenario - Boundary Cases"
-                ])
-            else:
-                expanded_section_names.append(s)
-        remaining_sections = expanded_section_names
-
+        # Initialize LangChain LLM (tracing enabled)
         llm = ChatOpenAI(
             model_name=self.model,
             temperature=0.1,
             verbose=True,
-            openai_api_key=openai_api_key,
-            timeout=600,
-            max_retries=2
+            openai_api_key=openai_api_key
         )
 
         async def call_llm_for_sections(sections_subset):
             context_json = json.dumps(payload, indent=2)
             batched_prompt = (
                 "You are an expert SAP ABAP technical specification writer.\n"
-                "Strictly follow the given section names.\n"
+                "Srictly follow the section names as mentioned. Do not infere any other similar name\n"
                 "Generate content for multiple SECTIONS of an SAP ABAP document.\n"
-                "For each section, follow its BIBLE and use only the JSON payload.\n"
-                "Output format:\n"
+                "For each section:\n"
+                "- Follow its 'BIBLE' strictly.\n"
+                "- Use ONLY info from the JSON payload.\n"
+                "- Output each section in format:\n"
                 "<<START:{Section Name}>>\n<content>\n<<END:{Section Name}>>\n\n"
                 f"Payload:\n```json\n{context_json}\n```\n"
             )
 
             for s in sections_subset:
                 batched_prompt += f"\n====== SECTION: {s} ======\n"
-                batched_prompt += f"---START BIBLE---\n{section_bibles.get(s.split('-')[0].strip(), '')}\n---END BIBLE---\n"
+                batched_prompt += f"---START BIBLE---\n{section_bibles.get(s, '')}\n---END BIBLE---\n"
                 batched_prompt += f"Generate content for '{s}'. No titles or numbering.\n"
+                if s.strip().lower() == "flow diagram":
+                    batched_prompt += (
+                        "\nEXTRA INSTRUCTIONS:\n"
+                        "1. Output one line: Step1 -> Step2 -> Step3.\n"
+                        "2. No markdown, no code, no prose.\n"
+                        "3. If none, output: Start -> No Relevant Logic -> End.\n"
+                    )
 
             try:
-                response = await asyncio.wait_for(
-                    llm.agenerate([[HumanMessage(content=batched_prompt)]]),
-                    timeout=900
-                )
+                # LangChain call (tracing automatically captured in LangSmith)
+                response = await llm.agenerate([[HumanMessage(content=batched_prompt)]])
                 return response.generations[0][0].text.strip()
-            except asyncio.TimeoutError:
-                logger.error(f"[Timeout] Section(s) {sections_subset} exceeded 15 minutes.")
-                return ""
             except Exception as e:
                 logger.error(f"[Async Batch Error] {e}")
                 return ""
 
-        # Retry loop
+        # --- Retry loop ---
         for attempt in range(1, max_retries + 1):
             if not remaining_sections:
                 break
+
             logger.info(f"🌀 Attempt {attempt} for sections: {remaining_sections}")
             output = await call_llm_for_sections(remaining_sections)
+
             newly_completed = []
             for s in remaining_sections:
                 start_tag, end_tag = f"<<START:{s}>>", f"<<END:{s}>>"
                 if start_tag in output and end_tag in output:
-                    results[s] = output.split(start_tag, 1)[1].split(end_tag, 1)[0].strip()
+                    content = output.split(start_tag, 1)[1].split(end_tag, 1)[0].strip()
+                    results[s] = content
                     newly_completed.append(s)
                 else:
                     logger.warning(f"[Attempt {attempt}] Missing section: {s}")
+
             remaining_sections = [s for s in remaining_sections if s not in newly_completed]
             if remaining_sections:
                 await asyncio.sleep(1.5)
 
+        # --- Fill missing after all retries ---
         for s in remaining_sections:
             results[s] = f"[Error: Section {s} not found after {max_retries} retries.]"
+
         return results
