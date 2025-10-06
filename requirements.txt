@@ -7,3 +7,4 @@ openai
 python-dotenv
 python-docx
 matplotlib
+langchain_community
