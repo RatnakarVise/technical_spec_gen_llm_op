@@ -88,7 +88,7 @@ prompt: List all SAP authorization objects, authority-check statements, and any 
 #Test Scenario
 type: text
 description: Test plan coverage/scenarios, input data, expected outputs, status.
-prompt:Present the results strictly as a text with the sections: Test Case, Objective, Input Data, Expected Output, Actual Result/Status, Sign-off/Comments.Analyze the payload(selectionscreen, declarations and explanation) and then Generate and List all the possible positive as well as negative key test cases/scenarios, their input/expected output, actual result/status, and sign-off.
+prompt:Present the results strictly as a text with the sections: Test Case, Objective, Input Data, Expected Output, Actual Result/Status, Sign-off/Comments, do the numbering.. Like 1. Testcase, 2. Testcase.. and so on.Analyze the payload(selectionscreen, declarations and explanation) and then Generate and List all the possible positive as well as negative key test cases/scenarios, their input/expected output, actual result/status, and sign-off.
 
 #Sign-Off
 type: table
