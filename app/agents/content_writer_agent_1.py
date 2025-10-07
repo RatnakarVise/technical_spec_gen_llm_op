@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 import openai
 from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
- langchain.schema import HumanMessage
+from langchain.schema import HumanMessage
 load_dotenv()
 logger = logging.getLogger("content_writer_agent")
 logging.basicConfig(level=logging.INFO)
