@@ -57,7 +57,7 @@ SECTION_BUNDLES = [
     # (["Processing Logic"], ['pgm_name', 'type', 'explanation']),
     # (["Detailed Logic Block Descriptions"], ['pgm_name', 'type', 'explanation']),
     # (["Output Details"], ['pgm_name', 'type', 'explanation']),
-    (["Data Declarations & SAP Tables Used"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Data Declarations & SAP Tables Used"], ['declarations', 'explanation']),
     # (["Enhancements & Modifications"], [ 'selectionscreen', 'declarations', 'explanation']),
     # (["Error Handling & Logging"], [ 'selectionscreen', 'declarations', 'explanation']),
     # (["Performance Considerations"], [ 'selectionscreen', 'declarations', 'explanation']),
