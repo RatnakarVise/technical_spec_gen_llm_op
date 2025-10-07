@@ -31,7 +31,7 @@ description: Table of all key SAP technical objects created/used (programs, func
 fields: [Object Type, Object Name, Description, Related Main Program/Module]
 prompt: Present the results strictly as a table with the columns: Object Type, Object Name, Description, Related Main Program/Module.Carefully Analyze the payload(explanation) and List only the SAP technical objects (such as programs, function modules, classes, methods, PERFORM routines, FMs, Transactions) that are created or used in the solution. Exclude any data declarations such as internal tables, work areas, variables, types, or constants. Present the result as a table with columns: Object Type, Object Name, Description, and Related Main Program/Module.
 
-#Data Declarations
+#Data Declarations & SAP Tables Used
 type: table
 description:Comprehensive table of all significant data declarations—including internal tables, work areas, variables, types, and constants—and SAP database tables directly read from or written to in the solution. This excludes any selection screen elements (e.g., PARAMETERS or SELECT-OPTIONS).
 fields: [Declaration Name, Data Type/Object, Description, Usage Context]
