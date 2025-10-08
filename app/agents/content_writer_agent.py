@@ -51,20 +51,20 @@ def filter_payload_by_keys(payload: Dict[str, Any], required_keys: List[str]) ->
 # Each bundle is ( [section_name1, section_name2, ...], [payload_key1, payload_key2, ...])
 # NOT clubbed sections can be left as ["Section"], ["payload_key1"] so they're handled individually.
 SECTION_BUNDLES = [
-    # (["Test Scenario"], [ 'selectionscreen', 'explanation']),
-    # (["Document Information", "Introduction", "Requirement Overview", "Solution Approach", "SAP Object Details"], ['pgm_name','type', 'inc_name', 'explanation']),
-    # (["User Interface Details"], ["selectionscreen"]),
-    # (["Processing Logic"], ['pgm_name', 'type', 'explanation']),
-    # (["Detailed Logic Block Descriptions"], ['pgm_name', 'type', 'explanation']),
-    # (["Output Details"], ['pgm_name', 'type', 'explanation']),
+    (["Test Scenario"], [ 'selectionscreen', 'explanation']),
+    (["Document Information", "Introduction", "Requirement Overview", "Solution Approach", "SAP Object Details"], ['pgm_name','type', 'inc_name', 'explanation']),
+    (["User Interface Details"], ["selectionscreen"]),
+    (["Processing Logic"], ['pgm_name', 'type', 'explanation']),
+    (["Detailed Logic Block Descriptions"], ['pgm_name', 'type', 'explanation']),
+    (["Output Details"], ['pgm_name', 'type', 'explanation']),
     (["Data Declarations & SAP Tables Used"], ['declarations', 'explanation']),
-    # (["Enhancements & Modifications"], [ 'selectionscreen', 'declarations', 'explanation']),
-    # (["Error Handling & Logging"], [ 'selectionscreen', 'declarations', 'explanation']),
-    # (["Performance Considerations"], [ 'selectionscreen', 'declarations', 'explanation']),
-    # (["Security & Authorizations"], [ 'selectionscreen', 'declarations', 'explanation']),
-    # (["Flow Diagram"],[ 'selectionscreen', 'declarations', 'explanation']),
-    # (["Transport Management"], ['transport']),
-    # (["Sign-Off"], []),
+    (["Enhancements & Modifications"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Error Handling & Logging"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Performance Considerations"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Security & Authorizations"], [ 'selectionscreen', 'declarations', 'explanation']),
+    (["Flow Diagram"],[ 'selectionscreen', 'declarations', 'explanation']),
+    (["Transport Management"], ['transport']),
+    (["Sign-Off"], []),
 ]
 # =============================================================================
 
