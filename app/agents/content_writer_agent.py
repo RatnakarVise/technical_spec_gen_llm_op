@@ -19,7 +19,7 @@ if openai_api_key:
     os.environ["OPENAI_API_KEY"] = openai_api_key
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 
-OPENAI_MODEL = "gpt-4.1"
+OPENAI_MODEL = "gpt-5"
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "knowledge_base.txt")
 
 def load_sections_from_template(template_file: str) -> list:
