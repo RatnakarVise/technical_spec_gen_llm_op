@@ -5,8 +5,10 @@ from typing import Any, Dict, List
 import openai
 from dotenv import load_dotenv
 import asyncio
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage
+# from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
+# from langchain.schema import HumanMessage
 load_dotenv()
 logger = logging.getLogger("content_writer_agent")
 logging.basicConfig(level=logging.INFO)
@@ -215,7 +217,7 @@ class ContentWriterAgent:
                 timeout_seconds = 600
                 # Wrap the LLM call in asyncio.wait_for to enforce timeout
                 response = await asyncio.wait_for(
-                    llm.agenerate([[HumanMessage(content=batched_prompt)]]),
+                    llm.ainvoke([[HumanMessage(content=batched_prompt)]]),
                     timeout=timeout_seconds
                 )
                 return response.generations[0][0].text.strip()

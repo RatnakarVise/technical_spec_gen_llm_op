@@ -8,3 +8,4 @@ python-dotenv
 python-docx
 matplotlib
 langchain_community
+langchain_core
