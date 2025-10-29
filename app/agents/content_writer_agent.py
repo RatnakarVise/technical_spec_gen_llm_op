@@ -217,10 +217,11 @@ class ContentWriterAgent:
                 timeout_seconds = 600
                 # Wrap the LLM call in asyncio.wait_for to enforce timeout
                 response = await asyncio.wait_for(
-                    llm.ainvoke([[HumanMessage(content=batched_prompt)]]),
+                    llm.ainvoke([HumanMessage(content=batched_prompt)]),
                     timeout=timeout_seconds
                 )
-                return response.generations[0][0].text.strip()
+                return response.content.strip()
+                # return response.generations[0][0].text.strip()
             except asyncio.TimeoutError:
                 logger.warning(f"[Timeout] LLM call exceeded {timeout_seconds}s for sections: {sections_subset}")
                 return ""  # empty string indicates timeout
